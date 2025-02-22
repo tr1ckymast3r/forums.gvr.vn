@@ -1,0 +1,121 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { format } from 'date-fns';
+import { QuickReply } from '../../../components/QuickReply';
+import { PostReactions } from '../../../components/PostReactions';
+import { UserBadge } from '../../../components/UserBadge';
+import { OnlineStatus } from '../../../components/OnlineStatus';
+import { mockForumService } from '../../../lib/supabase';
+
+export function getStaticPaths() {
+  return mockForumService.topics.map(topic => ({
+    params: { id: topic.id }
+  }));
+}
+
+const { id } = Astro.params;
+const topic = mockForumService.topics.find(t => t.id === id);
+---
+
+<Layout>
+  <div class="min-h-screen bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+      <!-- Breadcrumb -->
+      <div class="mb-6">
+        <nav class="text-sm">
+          <a href="/forums" class="text-primary hover:text-primary/90">Forums</a>
+          <span class="mx-2 text-muted-foreground">/</span>
+          <a href={`/forums/category/${topic?.category_id}`} class="text-primary hover:text-primary/90">
+            {mockForumService.categories.find(c => c.id === topic?.category_id)?.name}
+          </a>
+          <span class="mx-2 text-muted-foreground">/</span>
+          <span class="text-foreground">{topic?.title}</span>
+        </nav>
+      </div>
+
+      <!-- Topic -->
+      <div class="bg-card rounded-lg shadow-sm border mb-6">
+        <div class="grid grid-cols-[auto,1fr] gap-6 p-6 border-b">
+          <!-- Author Info -->
+          <div class="w-48 text-center">
+            <a href={`/forums/user/${topic?.author.username}`} class="inline-block">
+              <img
+                src={topic?.author.avatar_url}
+                alt={topic?.author.username}
+                class="w-20 h-20 rounded-lg border mx-auto mb-2"
+              />
+              <div class="text-primary hover:text-primary/90 font-medium">
+                {topic?.author.username}
+              </div>
+            </a>
+            <div class="mt-2 flex flex-col items-center gap-2">
+              <UserBadge type="admin" client:load />
+              <OnlineStatus isOnline={true} client:load />
+            </div>
+          </div>
+
+          <!-- Topic Content -->
+          <div>
+            <div class="flex justify-between items-start mb-4">
+              <h1 class="text-2xl font-bold text-primary">{topic?.title}</h1>
+              <span class="text-sm text-muted-foreground">
+                {topic && format(new Date(topic.created_at), 'MMM d, yyyy h:mm a')}
+              </span>
+            </div>
+            <div class="prose max-w-none mb-4">
+              {topic?.posts[0]?.content}
+            </div>
+            <PostReactions postId={topic?.posts[0]?.id} client:load />
+          </div>
+        </div>
+      </div>
+
+      <!-- Replies -->
+      {topic?.posts.slice(1).map(post => (
+        <div class="bg-card rounded-lg shadow-sm border mb-6">
+          <div class="grid grid-cols-[auto,1fr] gap-6 p-6">
+            <!-- Author Info -->
+            <div class="w-48 text-center">
+              <a href={`/forums/user/${post.author.username}`} class="inline-block">
+                <img
+                  src={post.author.avatar_url}
+                  alt={post.author.username}
+                  class="w-20 h-20 rounded-lg border mx-auto mb-2"
+                />
+                <div class="text-primary hover:text-primary/90 font-medium">
+                  {post.author.username}
+                </div>
+              </a>
+              <div class="mt-2 flex flex-col items-center gap-2">
+                <UserBadge type="member" client:load />
+                <OnlineStatus isOnline={false} lastSeen={new Date(post.created_at)} client:load />
+              </div>
+            </div>
+
+            <!-- Reply Content -->
+            <div>
+              <div class="flex justify-end mb-4">
+                <span class="text-sm text-muted-foreground">
+                  {format(new Date(post.created_at), 'MMM d, yyyy h:mm a')}
+                </span>
+              </div>
+              <div class="prose max-w-none mb-4">
+                {post.content}
+              </div>
+              <PostReactions postId={post.id} client:load />
+            </div>
+          </div>
+        </div>
+      ))}
+
+      <!-- Quick Reply -->
+      <QuickReply
+        topicId={id}
+        onReply={(content) => {
+          console.log('Reply submitted:', content);
+        }}
+        client:load
+      />
+    </div>
+  </div>
+</Layout>

@@ -1,0 +1,152 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { format } from 'date-fns';
+import { Shoutbox } from '../components/Shoutbox';
+
+// Mock data for forum categories
+const forumCategories = [
+  {
+    id: 1,
+    name: 'General Discussion',
+    description: 'General discussions about any topic',
+    topics: 234,
+    posts: 1543,
+    lastPost: {
+      title: 'Welcome to our community!',
+      author: 'Admin',
+      date: new Date('2024-02-20T15:30:00'),
+    },
+    icon: '💬',
+  },
+  {
+    id: 2,
+    name: 'Technical Support',
+    description: 'Get help with technical issues',
+    topics: 156,
+    posts: 892,
+    lastPost: {
+      title: 'How to install updates?',
+      author: 'TechGuru',
+      date: new Date('2024-02-21T09:15:00'),
+    },
+    icon: '🔧',
+  },
+  {
+    id: 3,
+    name: 'News & Announcements',
+    description: 'Latest updates and announcements',
+    topics: 45,
+    posts: 267,
+    lastPost: {
+      title: 'New features coming soon!',
+      author: 'Moderator',
+      date: new Date('2024-02-21T11:45:00'),
+    },
+    icon: '📢',
+  },
+];
+---
+
+<Layout>
+  <div class="min-h-screen bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+      <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Main Content -->
+        <div class="flex-1 space-y-8">
+          <!-- Forum Header -->
+          <div>
+            <h1 class="text-3xl font-bold text-forum-primary mb-2">Community Forums</h1>
+            <div class="flex gap-4 text-sm text-gray-600">
+              <div>Members online: <span class="font-semibold">127</span></div>
+              <div>Total topics: <span class="font-semibold">435</span></div>
+              <div>Total posts: <span class="font-semibold">2,702</span></div>
+            </div>
+          </div>
+
+          <!-- Shoutbox -->
+          <Shoutbox client:load />
+
+          <!-- Forum Categories -->
+          <div class="space-y-4">
+            {forumCategories.map(category => (
+              <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:border-forum-primary transition-colors">
+                <div class="p-4">
+                  <div class="flex items-start gap-4">
+                    <div class="text-2xl">{category.icon}</div>
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between">
+                        <div>
+                          <h2 class="text-lg font-semibold text-forum-primary hover:text-forum-hover">
+                            <a href={`/forums/category/${category.id}`}>{category.name}</a>
+                          </h2>
+                          <p class="text-gray-600 text-sm mt-1">{category.description}</p>
+                        </div>
+                        <div class="text-sm text-gray-500 text-right hidden md:block">
+                          <div>{category.topics} topics</div>
+                          <div>{category.posts} posts</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Last Post -->
+                  <div class="mt-4 pt-4 border-t border-gray-100">
+                    <div class="flex justify-between items-center text-sm">
+                      <div class="text-forum-primary">
+                        <span class="font-medium">Latest:</span>
+                        <a href="#" class="hover:underline ml-1">{category.lastPost.title}</a>
+                      </div>
+                      <div class="text-gray-500">
+                        <span>by </span>
+                        <a href="#" class="text-forum-primary hover:underline">{category.lastPost.author}</a>
+                        <span class="ml-2">{format(category.lastPost.date, 'MMM d, yyyy')}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- Right Sidebar - Sticky -->
+        <div class="lg:w-80">
+          <div class="lg:sticky lg:top-8 space-y-6">
+            <!-- Forum Statistics -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <h3 class="text-lg font-semibold text-forum-primary mb-4">Forum Statistics</h3>
+              <div class="space-y-4">
+                <div class="p-3 bg-gray-50 rounded-lg">
+                  <div class="text-2xl font-bold text-forum-primary">2,702</div>
+                  <div class="text-gray-600">Total Posts</div>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-lg">
+                  <div class="text-2xl font-bold text-forum-primary">435</div>
+                  <div class="text-gray-600">Total Topics</div>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-lg">
+                  <div class="text-2xl font-bold text-forum-primary">1,248</div>
+                  <div class="text-gray-600">Members</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Online Users -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <h3 class="text-lg font-semibold text-forum-primary mb-4">Who's Online</h3>
+              <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                  <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                  <span class="text-gray-600">127 users online</span>
+                </div>
+                <div class="text-sm text-gray-500">
+                  Latest: Admin, Moderator, TechGuru, NewUser
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>

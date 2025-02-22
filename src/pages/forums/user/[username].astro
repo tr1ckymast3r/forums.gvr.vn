@@ -1,0 +1,167 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { format } from 'date-fns';
+import { ReputationBadge } from '../../../components/ReputationBadge';
+
+export async function getStaticPaths() {
+  return [
+    { params: { username: 'Admin' } },
+    { params: { username: 'Moderator' } },
+    { params: { username: 'NewMember' } }
+  ];
+}
+
+const { username } = Astro.params;
+
+// Mock user data
+const user = {
+  username,
+  joinDate: new Date('2024-01-15'),
+  posts: 127,
+  reputation: 2750,
+  reputationLevel: 'Expert',
+  rank: 'Senior Member',
+  avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
+  location: 'New York, USA',
+  lastActive: new Date('2024-02-21T16:45:00')
+};
+
+// Mock recent posts
+const recentPosts = [
+  {
+    id: 1,
+    topicId: 1,
+    topicTitle: 'Welcome to our community!',
+    content: 'Thanks for the warm welcome! Looking forward to being part of this community.',
+    createdAt: new Date('2024-02-20T11:30:00')
+  },
+  {
+    id: 2,
+    topicId: 3,
+    topicTitle: 'Introduce yourself!',
+    content: 'Hello everyone! I\'m excited to join this community and share experiences.',
+    createdAt: new Date('2024-02-21T14:15:00')
+  }
+];
+
+// Mock reputation history
+const reputationHistory = [
+  {
+    id: 1,
+    event: 'Post liked',
+    points: 10,
+    date: new Date('2024-02-21T14:30:00')
+  },
+  {
+    id: 2,
+    event: 'Answer accepted',
+    points: 15,
+    date: new Date('2024-02-21T12:15:00')
+  },
+  {
+    id: 3,
+    event: 'Topic created',
+    points: 5,
+    date: new Date('2024-02-20T16:45:00')
+  }
+];
+---
+
+<Layout>
+  <div class="min-h-screen bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+      <!-- Profile Header -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="flex items-start gap-6">
+          <img
+            src={user.avatar}
+            alt={user.username}
+            class="w-24 h-24 rounded-lg border border-gray-200"
+          />
+          <div class="flex-1">
+            <div class="flex justify-between items-start">
+              <div>
+                <h1 class="text-2xl font-bold text-forum-primary mb-2">{user.username}</h1>
+                <ReputationBadge points={user.reputation} level={user.reputationLevel} client:load />
+                <p class="text-gray-600 mt-2">{user.rank}</p>
+              </div>
+              <div class="text-sm text-gray-500 text-right">
+                <p>Member since {format(user.joinDate, 'MMMM yyyy')}</p>
+                <p>Last active {format(user.lastActive, 'MMM d, yyyy h:mm a')}</p>
+              </div>
+            </div>
+            <div class="mt-4 grid grid-cols-3 gap-4">
+              <div class="bg-gray-50 p-3 rounded-lg">
+                <div class="text-2xl font-bold text-forum-primary">{user.posts}</div>
+                <div class="text-sm text-gray-600">Posts</div>
+              </div>
+              <div class="bg-gray-50 p-3 rounded-lg">
+                <div class="text-sm text-gray-600">Location</div>
+                <div class="text-forum-primary">{user.location}</div>
+              </div>
+              <div class="bg-gray-50 p-3 rounded-lg">
+                <div class="text-sm text-gray-600">Status</div>
+                <div class="text-green-500">Online</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Recent Posts -->
+        <div class="lg:col-span-2">
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="p-4 border-b border-gray-200">
+              <h2 class="text-lg font-semibold text-forum-primary">Recent Posts</h2>
+            </div>
+            <div class="divide-y divide-gray-200">
+              {recentPosts.map(post => (
+                <div class="p-4">
+                  <div class="flex justify-between items-start mb-2">
+                    <a
+                      href={`/forums/topic/${post.topicId}`}
+                      class="text-forum-primary hover:text-forum-hover font-medium"
+                    >
+                      {post.topicTitle}
+                    </a>
+                    <span class="text-sm text-gray-500">
+                      {format(post.createdAt, 'MMM d, yyyy')}
+                    </span>
+                  </div>
+                  <p class="text-gray-600">{post.content}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <!-- Reputation History -->
+        <div class="lg:col-span-1">
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="p-4 border-b border-gray-200">
+              <h2 class="text-lg font-semibold text-forum-primary">Reputation History</h2>
+            </div>
+            <div class="divide-y divide-gray-200">
+              {reputationHistory.map(event => (
+                <div class="p-4">
+                  <div class="flex justify-between items-center">
+                    <div>
+                      <div class="font-medium text-gray-900">{event.event}</div>
+                      <div class="text-sm text-gray-500">
+                        {format(event.date, 'MMM d, yyyy h:mm a')}
+                      </div>
+                    </div>
+                    <div class={`text-sm font-medium ${event.points > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {event.points > 0 ? '+' : ''}{event.points}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
